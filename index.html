@@ -183,16 +183,12 @@
   /* HEATMAP */
   .heatmap-scroll { overflow-x: auto; }
   .heatmap-wrap { display: flex; flex-direction: column; align-items: center; padding: 8px 0; width: max-content; margin: 0 auto; }
-  .hm-zone-header { display: flex; gap: 2px; align-items: center; margin-bottom: 4px; }
-  .hm-a-header { width: 163px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text3); flex-shrink: 0; }
-  .hm-label-gap { width: 28px; flex-shrink: 0; }
-  .hm-b-header { width: 148px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text3); flex-shrink: 0; }
   .hm-rows { display: flex; flex-direction: column; gap: 2px; }
-  .hm-row { display: flex; align-items: center; gap: 2px; }
-  .hm-a-side { display: flex; gap: 2px; flex-shrink: 0; }
-  .hm-b-side { display: flex; gap: 2px; flex-shrink: 0; }
+  .hm-row { display: flex; align-items: center; gap: 4px; }
   .hm-merged { display: flex; gap: 2px; flex-shrink: 0; }
-  .row-label { font-size: 9px; color: var(--text3); min-width: 28px; width: 28px; flex-shrink: 0; text-align: right; white-space: nowrap; }
+  .row-label { font-size: 9px; color: var(--text3); min-width: 12px; width: 12px; flex-shrink: 0; text-align: center; white-space: nowrap; }
+  .hm-aisle { width: 6px; flex-shrink: 0; }
+  .hm-entrance { width: 18px; flex-shrink: 0; }
   .seat-cell { width: 13px; height: 13px; border-radius: 2px; background: var(--bg3); border: 1px solid var(--border); transition: background 0.2s; flex-shrink: 0; }
   .seat-cell.v1 { background: var(--seat1); border-color: var(--seat1); }
   .seat-cell.v2 { background: var(--seat2); border-color: var(--seat2); }
@@ -714,12 +710,17 @@
         <option value="early">조기예매할인 (20%)</option>
         <option value="timesale">타임세일</option>
         <option value="rewatch">재관람할인 (25%)</option>
-        <option value="discount40">현장구매 40% 할인권</option>
-        <option value="discount30">온라인 30% 할인권</option>
+        <option value="discount40">전석 40% 할인권</option>
+        <option value="site40">현장예매 40% 할인권</option>
+        <option value="discount30">온라인예매 30% 할인권</option>
         <option value="disabled50">장애인/국가유공자 할인 (50%)</option>
         <option value="fullprice">정가</option>
       </select>
       <div id="rec-discount-warn" style="display:none;margin-top:6px;font-size:12px;color:var(--danger);">⚠ 현재 보유한 쿠폰이 없습니다</div>
+      <label id="rec-paid-diff-wrap" style="display:none;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:var(--text2);cursor:pointer;">
+        <input type="checkbox" id="rec-paid-diff" onchange="onDiscountTypeChange()">
+        차액 지불 (현장에서 재관람가로 변경 — 쿠폰 차감 안 함)
+      </label>
     </div>
 
     <div class="form-group">
@@ -845,7 +846,7 @@
       <div style="display:flex;gap:12px;margin-bottom:8px;">
         <div style="flex:1;text-align:center;background:var(--bg1);border-radius:8px;padding:6px 4px;">
           <div style="font-size:11px;color:var(--text3);margin-bottom:2px;">4칸 달성</div>
-          <div style="font-weight:700;color:var(--text1);">현장40% 할인권 2매</div>
+          <div style="font-weight:700;color:var(--text1);">전석 40% 할인권 2매</div>
         </div>
         <div style="flex:1;text-align:center;background:var(--bg1);border-radius:8px;padding:6px 4px;">
           <div style="font-size:11px;color:var(--text3);margin-bottom:2px;">7칸 달성</div>
@@ -919,8 +920,9 @@
     <div class="form-group">
       <label class="form-label">종류</label>
       <select class="form-control" id="manual-coupon-key">
-        <option value="discount40">현장구매 40% 할인권</option>
-        <option value="discount30">온라인 30% 할인권</option>
+        <option value="discount40">전석 40% 할인권</option>
+        <option value="site40">현장예매 40% 할인권</option>
+        <option value="discount30">온라인예매 30% 할인권</option>
       </select>
     </div>
     <div class="form-group">
@@ -970,8 +972,8 @@
     </div>
     <div style="background:var(--accent-light);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--accent);">
       <div style="font-weight:700;margin-bottom:4px;">🎁 쿠폰팩 구성</div>
-      <div>현장구매 40% 할인권 × 1</div>
-      <div>온라인 30% 할인권 × 2</div>
+      <div>현장예매 40% 할인권 × 1</div>
+      <div>온라인예매 30% 할인권 × 2</div>
       <div style="margin-top:6px;font-size:11px;opacity:0.8;">사용기한: ~ 2026.04.12</div>
     </div>
     <div class="form-group">
@@ -1008,7 +1010,7 @@ function migrateStampBoards(boards) {
   return boards.map(b => {
     if (!b.milestones) {
       b.milestones = [
-        { at: 4, reward: '현장40% 할인권 2매', couponKey: 'discount40', qty: 2, notified: b.currentCount >= 4 },
+        { at: 4, reward: '전석 40% 할인권 2매', couponKey: 'discount40', qty: 2, notified: b.currentCount >= 4 },
         { at: 7, reward: '미니 스토리북 + 실황 OST', couponKey: null, notified: b.currentCount >= 7 }
       ];
     } else {
@@ -1028,10 +1030,11 @@ function getCoupons() {
   if (d) {
     // migrate: ensure all keys exist
     if (!d.discount40) d.discount40 = { count: 0, history: [] };
+    if (!d.site40)     d.site40     = { count: 0, history: [] };
     if (!d.discount30) d.discount30 = { count: 0, history: [] };
     return d;
   }
-  return { discount40: { count: 0, history: [] }, discount30: { count: 0, history: [] } };
+  return { discount40: { count: 0, history: [] }, site40: { count: 0, history: [] }, discount30: { count: 0, history: [] } };
 }
 function saveCoupons(c) { DB.set('coupons', c); }
 function getSettings()     { return DB.get('settings', { darkMode: false }); }
@@ -1195,6 +1198,8 @@ function openAddRecord(date) {
   document.getElementById('rec-num').value = '';
   document.getElementById('rec-price').value = '';
   document.getElementById('rec-discount-type').value = '';
+  document.getElementById('rec-paid-diff').checked = false;
+  document.getElementById('rec-paid-diff-wrap').style.display = 'none';
   document.getElementById('rec-discount-warn').style.display = 'none';
   document.getElementById('rec-comment').value = '';
   document.getElementById('rec-memo').value = '';
@@ -1224,7 +1229,9 @@ function editRecord(id) {
   document.getElementById('rec-num').value = r.seatNumber||'';
   document.getElementById('rec-price').value = r.price||'';
   document.getElementById('rec-discount-type').value = r.discountType||'';
+  document.getElementById('rec-paid-diff').checked = !!(r.paidDiff);
   document.getElementById('rec-discount-warn').style.display = 'none';
+  onDiscountTypeChange();
   document.getElementById('rec-comment').value = r.comment||'';
   document.getElementById('rec-memo').value = r.memo||'';
   // isBooked: true by default; unconfirmed = !isBooked
@@ -1260,7 +1267,8 @@ function saveRecord() {
   const recQtyEl      = document.querySelector('input[name="rec-stamp-qty"]:checked');
   const stampQty      = recQtyEl ? parseInt(recQtyEl.value) || 1 : 1;
   const discountType  = document.getElementById('rec-discount-type').value || null;
-  const newCouponKey  = DISCOUNT_COUPON_MAP[discountType] || null;
+  const paidDiff      = !!(discountType && document.getElementById('rec-paid-diff').checked);
+  const newCouponKey  = (discountType && !paidDiff) ? (DISCOUNT_COUPON_MAP[discountType] || null) : null;
 
   // 쿠폰 잔여 체크 (신규 또는 할인권종 변경 시)
   const prevRecord   = editId ? records.find(x => x.id === editId) : null;
@@ -1287,6 +1295,7 @@ function saveRecord() {
     seatNumber:   numVal!=='' ? parseInt(numVal) : null,
     price:        priceVal!=='' ? parseInt(priceVal) : null,
     discountType: discountType,
+    paidDiff:     paidDiff || undefined,
     stampBoardId: stampBoardId || null,
     stampQty:     stampBoardId ? stampQty : null,
     rating:       currentStar,
@@ -1343,7 +1352,7 @@ function saveRecord() {
 
             // 마일스톤 달성 시 notified 설정 (쿠폰 count는 calcCouponCount()가 m.notified로 동적 계산)
             if (!newBoard.milestones) newBoard.milestones = [
-              { at:4, reward:'현장40% 할인권 2매', couponKey:'discount40', qty:2, notified:false },
+              { at:4, reward:'전석 40% 할인권 2매', couponKey:'discount40', qty:2, notified:false },
               { at:7, reward:'미니 스토리북 + 실황 OST', couponKey:null, notified:false }
             ];
             newBoard.milestones.forEach(m => {
@@ -1398,7 +1407,7 @@ function openDetail(id) {
     html += `<div class="detail-field"><div class="detail-field-label">좌석</div><div class="detail-field-value">${r.seatZone}열 ${r.seatNumber}번</div></div>`;
     html += buildMiniSeat(r.seatZone, r.seatRow, r.seatNumber);
   }
-  if (r.price != null && r.price !== '') html += `<div class="detail-field"><div class="detail-field-label">티켓 가격</div><div class="detail-field-value">₩${r.price.toLocaleString()}${r.discountType ? ` <span style="font-size:11px;color:var(--accent);background:var(--accent-light);padding:2px 6px;border-radius:4px;margin-left:4px;">${DISCOUNT_LABEL[r.discountType] || r.discountType}</span>` : ''}</div></div>`;
+  if (r.price != null && r.price !== '') html += `<div class="detail-field"><div class="detail-field-label">티켓 가격</div><div class="detail-field-value">₩${r.price.toLocaleString()}${r.discountType ? ` <span style="font-size:11px;color:var(--accent);background:var(--accent-light);padding:2px 6px;border-radius:4px;margin-left:4px;">${DISCOUNT_LABEL[r.discountType] || r.discountType}</span>` : ''}${r.paidDiff ? ` <span style="font-size:11px;color:var(--text3);background:var(--bg3);padding:2px 6px;border-radius:4px;margin-left:2px;">차액 지불</span>` : ''}</div></div>`;
   if (r.stampBoardId) {
     const boards = getStampBoards();
     const board  = boards.find(b => b.id === r.stampBoardId);
@@ -1629,18 +1638,21 @@ function renderHome() {
     return cur + future;
   }
   const c40    = calcCouponCount('discount40', coupons, boards, records, todayStr);
+  const cSite  = calcCouponCount('site40',     coupons, boards, records, todayStr);
   const c30    = calcCouponCount('discount30', coupons, boards, records, todayStr);
   const f40    = homeCouponFinal('discount40');
+  const fSite  = homeCouponFinal('site40');
   const f30    = homeCouponFinal('discount30');
   const homeCouponItems = [
-    { key:'discount40', label:'현장40% 할인권', cur:c40, final:f40 },
-    { key:'discount30', label:'온라인30% 할인권', cur:c30, final:f30 },
+    { key:'discount40', label:'전석 40% 할인권',    cur:c40,   final:f40 },
+    { key:'site40',     label:'현장예매 40% 할인권', cur:cSite, final:fSite },
+    { key:'discount30', label:'온라인예매 30% 할인권', cur:c30, final:f30 },
   ];
   document.getElementById('home-coupons').innerHTML =
     `<div class="coupon-cards">${homeCouponItems.map(item => {
       const earned = (coupons[item.key].history||[]).filter(h=>h.type==='획득'||h.type==='복원').reduce((s,h)=>s+(h.qty||1),0)
         + boards.reduce((s,b)=>s+(b.milestones||[]).filter(m=>m.couponKey===item.key&&m.notified).reduce((t,m)=>t+(m.qty||1),0),0);
-      const used   = records.filter(r=>(DISCOUNT_COUPON_MAP[r.discountType]||null)===item.key).length
+      const used   = records.filter(r=>!r.paidDiff&&(DISCOUNT_COUPON_MAP[r.discountType]||null)===item.key).length
         + (coupons[item.key].history||[]).filter(h=>h.type==='사용').reduce((s,h)=>s+(h.qty||1),0);
       return `<div class="coupon-card">
         <div class="coupon-card-label">${item.label}</div>
@@ -2040,72 +2052,48 @@ function renderHeatmap() {
   };
   const hd = () => '<div class="seat-cell" style="visibility:hidden;"></div>';
 
-  // 10+label+10 구조 (전체 행 너비 동일)
-  // A-D: [hid + 1-9] / label / [10-19]
-  // E:   [hid hid + E1-7 + hid] / label / [E8-17]   ← E1이 D2 위치
-  // F,G: [hid + F1-7 + hid hid] / label / [F8-17]
-  // H:   [H1-7 + hid hid hid]   / label / [H8-17]   ← H1이 D1 한칸 왼쪽
-  // I,J: [hid + 1-9]            / label / [10-19]    ← H-I 사이 갭 없음
-  // K:   [hid + 1-9]            / label / [10-18 + hid]
-  let h = '<div class="hm-rows">';
-  h += '<div style="font-size:10px;color:var(--text3);text-align:center;padding:2px 0 4px;letter-spacing:2px;">STAGE</div>';
+  // 레이블 왼쪽 배치 구조
+  // A-D: [lbl][blank + 1~19]           ← D1이 H2 위치, H1보다 1칸 오른쪽
+  // E-G: [lbl][blank blank + E1~7 + 출입문 + E8~17]
+  // H-J: [lbl][H1~9 + 통로 + H10~19]  ← H1이 가장 왼쪽
+  // K:   [lbl][K1~9 + 통로 + K10~18 + blank]
+  const aisle = () => '<div class="hm-aisle"></div>';
+  const entrance = () => '<div class="hm-entrance"></div>';
 
-  // A~D열
+  let h = '<div class="hm-rows">';
+  h += '<div style="font-size:10px;color:var(--text3);text-align:center;padding:2px 0 4px;letter-spacing:2px;margin-left:16px;">STAGE</div>';
+
+  // A~D열: 레이블 + [blank + 1~19]
   ['A','B','C','D'].forEach(row => {
-    h += `<div class="hm-row"><div class="hm-a-side">${hd()}`;
-    for (let col = 1; col <= 9; col++) h += sc(row, col);
-    h += `</div><div class="row-label">${row}</div><div class="hm-b-side">`;
-    for (let col = 10; col <= 19; col++) h += sc(row, col);
+    h += `<div class="hm-row"><div class="row-label">${row}</div><div class="hm-merged">${hd()}`;
+    for (let col = 1; col <= 19; col++) h += sc(row, col);
     h += '</div></div>';
   });
 
   h += '<div style="height:4px;"></div>';
 
-  // E열: hid hid + E1-7 + hid
-  h += `<div class="hm-row"><div class="hm-a-side">${hd()}${hd()}`;
-  for (let col = 1; col <= 7; col++) h += sc('E', col);
-  h += hd();
-  h += `</div><div class="row-label">E</div><div class="hm-b-side">`;
-  for (let col = 8; col <= 17; col++) h += sc('E', col);
-  h += '</div></div>';
+  // E-G열: 레이블 + [blank blank + 1~7 + 출입문 + 8~17]
+  ['E','F','G'].forEach(row => {
+    h += `<div class="hm-row"><div class="row-label">${row}</div><div class="hm-merged">${hd()}${hd()}`;
+    for (let col = 1; col <= 7; col++) h += sc(row, col);
+    h += entrance();
+    for (let col = 8; col <= 17; col++) h += sc(row, col);
+    h += '</div></div>';
+  });
 
-  // F열: hid + F1-7 + hid hid
-  h += `<div class="hm-row"><div class="hm-a-side">${hd()}`;
-  for (let col = 1; col <= 7; col++) h += sc('F', col);
-  h += hd(); h += hd();
-  h += `</div><div class="row-label">F</div><div class="hm-b-side">`;
-  for (let col = 8; col <= 17; col++) h += sc('F', col);
-  h += '</div></div>';
-
-  // G열: hid + G1-7 + hid hid
-  h += `<div class="hm-row"><div class="hm-a-side">${hd()}`;
-  for (let col = 1; col <= 7; col++) h += sc('G', col);
-  h += hd(); h += hd();
-  h += `</div><div class="row-label">G</div><div class="hm-b-side">`;
-  for (let col = 8; col <= 17; col++) h += sc('G', col);
-  h += '</div></div>';
-
-  // H열: H1-7 + hid hid hid  (H1이 D1 한칸 왼쪽 = 패딩 없음)
-  h += `<div class="hm-row"><div class="hm-a-side">`;
-  for (let col = 1; col <= 7; col++) h += sc('H', col);
-  h += hd(); h += hd(); h += hd();
-  h += `</div><div class="row-label">H</div><div class="hm-b-side">`;
-  for (let col = 8; col <= 17; col++) h += sc('H', col);
-  h += '</div></div>';
-
-  // I~J열 (H-I 사이 갭 없음)
-  ['I','J'].forEach(row => {
-    h += `<div class="hm-row"><div class="hm-a-side">${hd()}`;
+  // H-J열: 레이블 + [1~9 + 통로 + 10~19]  (H1이 가장 왼쪽)
+  ['H','I','J'].forEach(row => {
+    h += `<div class="hm-row"><div class="row-label">${row}</div><div class="hm-merged">`;
     for (let col = 1; col <= 9; col++) h += sc(row, col);
-    h += `</div><div class="row-label">${row}</div><div class="hm-b-side">`;
+    h += aisle();
     for (let col = 10; col <= 19; col++) h += sc(row, col);
     h += '</div></div>';
   });
 
-  // K열: hid + K1-9 / label / K10-18 + hid
-  h += `<div class="hm-row"><div class="hm-a-side">${hd()}`;
+  // K열: 레이블 + [1~9 + 통로 + 10~18 + blank]
+  h += `<div class="hm-row"><div class="row-label">K</div><div class="hm-merged">`;
   for (let col = 1; col <= 9; col++) h += sc('K', col);
-  h += `</div><div class="row-label">K</div><div class="hm-b-side">`;
+  h += aisle();
   for (let col = 10; col <= 18; col++) h += sc('K', col);
   h += hd();
   h += '</div></div>';
@@ -2221,7 +2209,7 @@ function renderStampBoards() {
       <button class="btn btn-primary" onclick="openAddStampBoard()" style="width:100%;padding:14px;">
         🆕 새 재관람 카드 시작하기
       </button>
-      <p style="font-size:12px;color:var(--text3);margin-top:8px;">7칸 · 4칸:현장40%할인권2매 · 7칸:미니스토리북+실황OST</p>
+      <p style="font-size:12px;color:var(--text3);margin-top:8px;">7칸 · 4칸:전석40%할인권2매 · 7칸:미니스토리북+실황OST</p>
     </div>`;
   }
 
@@ -2249,7 +2237,7 @@ function renderStampBoards() {
     let statusHtml = '';
     if (paused)               statusHtml = `<div class="stamp-status-row stamp-status-paused">일시정지 중</div>`;
     else if (alldone)         statusHtml = `<div class="stamp-status-row stamp-status-done">🏆 완성! 미니 스토리북 + 실황 OST</div>`;
-    else if (mid4done)        statusHtml = `<div class="stamp-status-row stamp-status-mid">🎉 4칸 달성! 현장40% 할인권 2매<br><span style="font-size:11px;">다음: 7칸 - 미니 스토리북 + 실황 OST</span></div>`;
+    else if (mid4done)        statusHtml = `<div class="stamp-status-row stamp-status-mid">🎉 4칸 달성! 전석 40% 할인권 2매<br><span style="font-size:11px;">다음: 7칸 - 미니 스토리북 + 실황 OST</span></div>`;
     else if (toNext !== null) statusHtml = `<div class="stamp-status-row stamp-status-next">다음: 4칸 (현재: ${cur}칸)</div>`;
 
     return `<div class="stamp-board${paused ? ' paused' : ''}">
@@ -2490,7 +2478,7 @@ function saveStampBoard() {
     totalSlots: 7,
     reward: '미니 스토리북 + 실황 OST',
     milestones: [
-      { at: 4, reward: '현장40% 할인권 2매', couponKey: 'discount40', qty: 2, notified: false },
+      { at: 4, reward: '전석 40% 할인권 2매', couponKey: 'discount40', qty: 2, notified: false },
       { at: 7, reward: '미니 스토리북 + 실황 OST', couponKey: null, notified: false }
     ],
     currentCount: 0,
@@ -2624,7 +2612,7 @@ function applyStampToBoard(boardId, qty, date, historyComment, userComment) {
   recalcStampCount(board);
 
   if (!board.milestones) board.milestones = [
-    { at:4, reward:'현장40% 할인권 2매', couponKey:'discount40', qty:2, notified:false },
+    { at:4, reward:'전석 40% 할인권 2매', couponKey:'discount40', qty:2, notified:false },
     { at:7, reward:'미니 스토리북 + 실황 OST', couponKey:null, notified:false }
   ];
   let toastMsg = '도장 ' + actualQty + '개 완료 (' + board.currentCount + '/' + board.totalSlots + ')';
@@ -2670,14 +2658,19 @@ function addStamp() {
 // 할인권종 → 쿠폰 키 매핑
 const DISCOUNT_COUPON_MAP = {
   'discount40': 'discount40',
+  'site40':     'site40',
   'discount30': 'discount30',
 };
 
 function onDiscountTypeChange() {
   const val = document.getElementById('rec-discount-type').value;
   const warn = document.getElementById('rec-discount-warn');
+  const paidDiffWrap = document.getElementById('rec-paid-diff-wrap');
+  const paidDiff = document.getElementById('rec-paid-diff').checked;
   const couponKey = DISCOUNT_COUPON_MAP[val];
-  if (couponKey) {
+  // 쿠폰 연동 할인권에만 차액 지불 체크박스 표시
+  paidDiffWrap.style.display = couponKey ? 'flex' : 'none';
+  if (couponKey && !paidDiff) {
     const coupons = getCoupons();
     const boards  = getStampBoards();
     const records = getRecords();
@@ -2728,10 +2721,10 @@ function saveCouponPack() {
   const comment = document.getElementById('coupon-pack-comment').value.trim();
   if (!date) { showToast('날짜를 입력해주세요'); return; }
   const coupons = getCoupons();
-  // 현장구매40% ×1, 온라인30% ×2
-  if (!coupons['discount40']) coupons['discount40'] = { count: 0, history: [] };
-  if (!coupons['discount40'].history) coupons['discount40'].history = [];
-  coupons['discount40'].history.push({ type:'획득', date, comment: comment || '쿠폰팩 획득', qty: 1 });
+  // 현장예매40% ×1, 온라인예매30% ×2
+  if (!coupons['site40']) coupons['site40'] = { count: 0, history: [] };
+  if (!coupons['site40'].history) coupons['site40'].history = [];
+  coupons['site40'].history.push({ type:'획득', date, comment: comment || '쿠폰팩 획득', qty: 1 });
   if (!coupons['discount30']) coupons['discount30'] = { count: 0, history: [] };
   if (!coupons['discount30'].history) coupons['discount30'].history = [];
   coupons['discount30'].history.push({ type:'획득', date, comment: comment || '쿠폰팩 획득', qty: 2 });
@@ -2745,8 +2738,9 @@ function saveCouponPack() {
 let _couponHistoryKey = '';
 
 const COUPON_ITEMS = [
-  { key:'discount40', label:'현장40% 할인권', short:'현장40%', abbr:'현장40%' },
-  { key:'discount30', label:'온라인30% 할인권', short:'온라인30%', abbr:'온30%' },
+  { key:'discount40', label:'전석 40% 할인권',    short:'전석40%',    abbr:'전석40%' },
+  { key:'site40',     label:'현장예매 40% 할인권', short:'현장예매40%', abbr:'현장40%' },
+  { key:'discount30', label:'온라인예매 30% 할인권', short:'온라인30%',  abbr:'온30%' },
 ];
 
 // 할인권 표시명 매핑 (내부 키 → 한글 표시)
@@ -2755,8 +2749,9 @@ const DISCOUNT_LABEL = {
   'early':      '조기예매할인 (20%)',
   'timesale':   '타임세일',
   'rewatch':    '재관람할인 (25%)',
-  'discount40': '현장구매 40% 할인권',
-  'discount30': '온라인 30% 할인권',
+  'discount40': '전석 40% 할인권',
+  'site40':     '현장예매 40% 할인권',
+  'discount30': '온라인예매 30% 할인권',
   'disabled50': '장애인/국가유공자 할인 (50%)',
   'fullprice':  '정가',
 };
@@ -2781,8 +2776,9 @@ function calcCouponCount(key, coupons, boards, records, asOf) {
       return achievedDate && achievedDate <= asOf;
     }).reduce((s, m) => s + (m.qty || 1), 0);
   }, 0);
-  // ③ 관람 기록 할인권 사용분 — asOf 기준 날짜만 차감
+  // ③ 관람 기록 할인권 사용분 — asOf 기준 날짜만 차감, paidDiff=true 건 스킵
   const used = records.filter(r =>
+    !r.paidDiff &&
     (DISCOUNT_COUPON_MAP[r.discountType] || null) === key &&
     (!asOf || r.date <= asOf)
   ).length;
@@ -2832,7 +2828,7 @@ function renderCouponList() {
     // 최종 기준 적립/사용 합산
     const earned = (coupons[item.key].history||[]).filter(h=>h.type==='획득'||h.type==='복원').reduce((s,h)=>s+(h.qty||1),0)
       + boards.reduce((s,b)=>s+(b.milestones||[]).filter(m=>m.couponKey===item.key&&m.notified).reduce((t,m)=>t+(m.qty||1),0),0);
-    const used   = records.filter(r=>(DISCOUNT_COUPON_MAP[r.discountType]||null)===item.key).length
+    const used   = records.filter(r=>!r.paidDiff&&(DISCOUNT_COUPON_MAP[r.discountType]||null)===item.key).length
       + (coupons[item.key].history||[]).filter(h=>h.type==='사용').reduce((s,h)=>s+(h.qty||1),0);
     return `<div class="coupon-card">
       <div class="coupon-card-label">${item.label}</div>
@@ -2918,6 +2914,7 @@ function renderCouponAllHistory() {
     const qty   = h.qty || 1;
     const delta = isGet ? `<span class="hist-delta-pos">+${qty}</span>` : `<span class="hist-delta-neg">-${qty}</span>`;
     const d40   = h.key === 'discount40' ? delta : '';
+    const dSite = h.key === 'site40'     ? delta : '';
     const d30   = h.key === 'discount30' ? delta : '';
     const milestoneBadge = h.isMilestone ? `<span class="hist-milestone-badge">달성</span>` : '';
     const memo  = `${h.comment || ''}${milestoneBadge}`;
@@ -2927,7 +2924,7 @@ function renderCouponAllHistory() {
     return `<tr>
       <td style="text-align:left;white-space:nowrap;">${dateStr}</td>
       <td>${typeHtml}</td>
-      <td>${d40}</td><td>${d30}</td>
+      <td>${d40}</td><td>${dSite}</td><td>${d30}</td>
       <td style="text-align:left;color:var(--text2);font-size:11px;">${memo}</td>
       <td>${delBtn}</td>
     </tr>`;
@@ -2935,7 +2932,7 @@ function renderCouponAllHistory() {
 
   el.innerHTML = `<table class="coupon-hist-table">
     <thead><tr>
-      <th style="text-align:center;">날짜</th><th>유형</th><th>현장40%</th><th>온30%</th><th style="text-align:center;">메모</th><th></th>
+      <th style="text-align:center;">날짜</th><th>유형</th><th>전석40%</th><th>현장40%</th><th>온30%</th><th style="text-align:center;">메모</th><th></th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
@@ -3084,7 +3081,7 @@ function _processV1Import(v1) {
   const statusEl = document.getElementById('import-v1-status');
   if (!v1.boards || !v1.performances) throw new Error('올바른 형식이 아닙니다');
 
-  const discountMap = { '프리뷰':'preview','재관':'rewatch','조기예매':'early','타임세일':'timesale','40%':'discount40','30%':'discount30' };
+  const discountMap = { '프리뷰':'preview','재관':'rewatch','조기예매':'early','타임세일':'timesale','전석 40%':'discount40','전석40%':'discount40','현장예매 40%':'site40','현장예매40%':'site40','40%':'site40','30%':'discount30' };
 
   // 스케줄에서 날짜+회차(낮/밤/'')로 실제 시간+캐스팅 조회
   const schedule = getSchedule();
@@ -3157,16 +3154,16 @@ function _processV1Import(v1) {
       id: b.id, name: b.name, totalSlots: 7,
       reward: '미니 스토리북 + 실황 OST',
       milestones: [
-        { at:4, reward:'현장40% 할인권 2매', couponKey:'discount40', qty:2, notified: cnt>=4 },
+        { at:4, reward:'전석 40% 할인권 2매', couponKey:'discount40', qty:2, notified: cnt>=4 },
         { at:7, reward:'미니 스토리북 + 실황 OST', couponKey:null, notified: cnt>=7 }
       ],
       currentCount: cnt, history: hist
     };
   });
 
-  const newCoupons = { discount40:{count:0,history:[]}, discount30:{count:0,history:[]} };
+  const newCoupons = { discount40:{count:0,history:[]}, site40:{count:0,history:[]}, discount30:{count:0,history:[]} };
   (v1.walletEntries || []).forEach(w => {
-    if (w.add40 > 0) newCoupons.discount40.history.push({ type:'획득', date:w.date, comment:w.note||'쿠폰팩 획득', qty:w.add40 });
+    if (w.add40 > 0) newCoupons.site40.history.push({ type:'획득', date:w.date, comment:w.note||'쿠폰팩 획득', qty:w.add40 });
     if (w.add30 > 0) newCoupons.discount30.history.push({ type:'획득', date:w.date, comment:w.note||'쿠폰팩 획득', qty:w.add30 });
   });
 
@@ -3248,7 +3245,7 @@ function migrateData() {
   // (notified 기반 동적 생성 + records 기반 동적 생성 방식으로 전환됐으므로 중복 방지)
   const coupons = getCoupons();
   let changed = false;
-  ['discount40','discount30'].forEach(key => {
+  ['discount40','site40','discount30'].forEach(key => {
     if (!coupons[key]?.history) return;
     const before = coupons[key].history.length;
     coupons[key].history = coupons[key].history.filter(h => {
