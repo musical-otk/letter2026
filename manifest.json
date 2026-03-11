@@ -1,0 +1,23 @@
+{
+  "name": "뮤지컬 너를 위한 글자",
+  "short_name": "글자",
+  "description": "뮤지컬 너를 위한 글자 관극 다이어리",
+  "start_url": "/letter2026/",
+  "scope": "/letter2026/",
+  "display": "standalone",
+  "background_color": "#f5f6fa",
+  "theme_color": "#B85060",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
