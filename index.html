@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>✍️ 뮤지컬 너를 위한 글자 관극 다이어리</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#B85060">
+<meta name="theme-color" content="#C97040">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="글자">
@@ -13,18 +13,18 @@
   :root {
     --bg: #f8f8f6; --bg1: #ffffff; --bg2: #ffffff; --bg3: #f0f0ee;
     --border: #e0e0dc; --text: #1a1a1a; --text1: #1a1a1a; --text2: #555550; --text3: #999990;
-    --accent: #B85060; --accent2: #963D50; --accent-light: #F5E3E6;
+    --accent: #C97040; --accent2: #A05028; --accent-light: #FAE8D4;
     --danger: #cc4444; --success: #2a8a4a; --star: #f0a020;
-    --seat1: #F0C0CA; --seat2: #E090A0; --seat3: #C86070; --seat4: #A03050; --seat5: #7A1530;
+    --seat1: #F5CEAF; --seat2: #EBA870; --seat3: #C97040; --seat4: #A05028; --seat5: #7A2E10;
     --shadow: 0 2px 12px rgba(0,0,0,0.08); --radius: 12px; --tab-h: 64px;
   }
   [data-theme="dark"] {
     --bg: #111118; --bg1: #1a1a24; --bg2: #1a1a24; --bg3: #22222e;
     --border: #333340; --text: #f0f0f0; --text1: #f0f0f0; --text2: #aaaaaa; --text3: #666670;
-    --accent: #C86880; --accent2: #E08098; --accent-light: #3A1020;
+    --accent: #E08850; --accent2: #C97040; --accent-light: #3A1800;
     --danger: #ee6666; --success: #44aa66;
     --shadow: 0 2px 12px rgba(0,0,0,0.4);
-    --seat1: #4A1520; --seat2: #7A2030; --seat3: #A02840; --seat4: #C83050; --seat5: #E06080;
+    --seat1: #3A1A08; --seat2: #6A3010; --seat3: #9A4820; --seat4: #C96830; --seat5: #E89050;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -315,7 +315,7 @@
 
   /* HOME */
   .next-show-card { background: var(--accent-light); border-radius: var(--radius); padding: 18px; margin-bottom: 8px; color: var(--accent); position: relative; overflow: hidden; cursor: pointer; }
-  [data-theme="dark"] .next-show-card { background: linear-gradient(135deg, #5a1525 0%, #8a2540 100%); color: #fff; }
+  [data-theme="dark"] .next-show-card { background: linear-gradient(135deg, #5a2810 0%, #8a4820 100%); color: #fff; }
   .next-show-card::before { content: '✍️'; position: absolute; right: 16px; top: 12px; font-size: 40px; opacity: 0.12; }
   .next-show-dday { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 4px; }
   .next-show-dday.today-dday { color: var(--accent2); }
@@ -323,7 +323,7 @@
   .next-show-date { font-size: 13px; opacity: 0.75; margin-bottom: 10px; }
   [data-theme="dark"] .next-show-date { opacity: 0.85; }
   .next-show-casting { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-  .next-show-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(184,24,42,0.1); color: var(--accent); }
+  .next-show-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(201,112,64,0.12); color: var(--accent); }
   [data-theme="dark"] .next-show-pill { background: rgba(255,255,255,0.25); color: #fff; }
   .next-show-pill.sky, .next-show-pill.didi, .next-show-pill.role3 { }
   .next-show-seat { font-size: 12px; opacity: 0.7; }
@@ -1546,7 +1546,7 @@ function renderHome() {
   } else {
     document.getElementById('home-next-show').innerHTML = `
       <div class="card" style="text-align:center;color:var(--text3);padding:20px;">
-        <div style="font-size:24px;margin-bottom:6px;">🍩</div>
+        <div style="font-size:24px;margin-bottom:6px;">✍️</div>
         <div style="font-size:13px;">예매 확정된 일정이 없습니다</div>
       </div>`;
   }
@@ -2048,10 +2048,12 @@ function renderHeatmap() {
   // STAGE 표시
   h += '<div style="font-size:10px;color:var(--text3);text-align:center;padding:2px 0 4px;letter-spacing:2px;">STAGE</div>';
 
-  // A~D열: 연속 19석 (row-label 왼쪽, hm-merged 19셀)
+  // A~D열: 19석 — center-label 구조 (1-9 좌 / label / 10-19 우)
   ['A','B','C','D'].forEach(row => {
-    h += `<div class="hm-row"><div class="row-label">${row}</div><div class="hm-merged">`;
-    for (let col = 1; col <= 19; col++) h += sc(row, col);
+    h += `<div class="hm-row"><div class="hm-a-side">`;
+    for (let col = 1; col <= 9; col++) h += sc(row, col);
+    h += `</div><div class="row-label">${row}</div><div class="hm-b-side">`;
+    for (let col = 10; col <= 19; col++) h += sc(row, col);
     h += '</div></div>';
   });
 
@@ -2086,11 +2088,12 @@ function renderHeatmap() {
   h += hd();
   h += '</div></div>';
 
-  // L열: 중앙 1~5석 (양쪽 패딩으로 중앙 정렬)
-  h += `<div class="hm-row"><div class="row-label">L</div><div class="hm-merged">`;
-  for (let i = 0; i < 7; i++) h += hd();
+  // L열: 중앙 1~5석 — center-label 구조 (a-side 9 hidden / label / b-side 5셀+5 hidden)
+  h += `<div class="hm-row"><div class="hm-a-side">`;
+  for (let i = 0; i < 9; i++) h += hd();
+  h += `</div><div class="row-label">L</div><div class="hm-b-side">`;
   for (let col = 1; col <= 5; col++) h += sc('L', col);
-  for (let i = 0; i < 7; i++) h += hd();
+  for (let i = 0; i < 5; i++) h += hd();
   h += '</div></div>';
 
   h += '</div>';
@@ -2202,7 +2205,7 @@ function renderStampBoards() {
   if (allDone) {
     html += `<div style="text-align:center;padding:12px 0 8px;">
       <button class="btn btn-primary" onclick="openAddStampBoard()" style="width:100%;padding:14px;">
-        🆕 새 재관람 적립 카드 시작하기
+        🆕 새 다관람 카드 시작하기
       </button>
       <p style="font-size:12px;color:var(--text3);margin-top:8px;">7칸 · 4칸:현장40%할인권2매 · 7칸:미니스토리북+실황OST</p>
     </div>`;

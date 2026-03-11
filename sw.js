@@ -1,4 +1,4 @@
-const CACHE_NAME = 'letter2026-v1';
+const CACHE_NAME = 'letter2026-v2';
 const BASE = '/letter2026';
 
 // 앱 시작 시 캐시할 파일들
